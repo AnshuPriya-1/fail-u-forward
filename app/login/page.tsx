@@ -125,6 +125,24 @@ export default function Login() {
 
   const isFormValid = email.trim() !== "" && password.trim() !== "";
 
+  // Map Firebase error codes to user-friendly messages
+const getFriendlyError = (code: string): string => {
+  switch (code) {
+    case "auth/invalid-credential":
+    case "auth/wrong-password":
+      return "Invalid email or password. Please try again.";
+    case "auth/user-not-found":
+      return "No account found with this email. Please sign up.";
+    case "auth/too-many-requests":
+      return "Too many failed attempts. Please try again later.";
+    case "auth/network-request-failed":
+      return "Network error. Please check your internet connection.";
+    default:
+      return "Login failed. Please try again.";
+  }
+};
+
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -135,8 +153,10 @@ export default function Login() {
       await mergeUserData(user);
       router.push("/feed");
     } catch (err: any) {
-      setError(err.message || "Login failed. Please try again.");
-    } finally {
+  const code = err.code || "unknown";
+  setError(getFriendlyError(code));
+}
+ finally {
       setLoading(false);
     }
   };
